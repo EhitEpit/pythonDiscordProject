@@ -1,0 +1,8 @@
+PyNaCl
+multidict
+multipledispatch
+discord
+discord.py
+future
+youtube-dl
+asyncio
