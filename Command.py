@@ -2,6 +2,7 @@ import datetime
 import re
 import threading
 
+import asyncio
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -13,35 +14,14 @@ from Log import Log
 
 
 class Command(commands.Cog):
+
     def __init__(self, bot: commands.Bot):
         self.logger = Log(self.__class__.__name__)
         self.bot = bot
         self.last_msg = []
+        self.spine_fairy_flag = False
         self.music = Music.Music(self.bot)
         self.last_time = datetime.datetime.now()
-        self.idle_flag = True
-
-    # 휴먼 상태 갱신
-    def idle_update(self):
-        self.last_time = datetime.datetime.now()
-
-    # 휴먼 상태 체크
-    def idle_check(self):
-        self.logger.info("휴먼 상태 체크")
-        if self.bot.voice_clients and (not self.bot.voice_clients[0].is_playing) and \
-                self.last_time + datetime.timedelta(minutes=1) <= datetime.datetime.now():   # 휴먼 상태가 된지 1분 지남
-            self.logger.info("나가기")
-            self.leave()
-            self.idle_flag = True
-            return
-        elif not self.bot.voice_clients:
-            self.logger.info("나가기2")
-            self.leave()
-            self.idle_flag = True
-            return
-
-        timer = threading.Timer(5, self.idle_check)
-        timer.start()
 
     # 핑 테스트
     @commands.command(name="핑")
@@ -56,28 +36,24 @@ class Command(commands.Cog):
     async def hello(self, ctx: Context):
         await ctx.send(f'안녕! {Util.get_user_name(ctx)}!')
 
-    # @commands.command(name="음악")
-    # async def music(self, ctx: Context, url: str):
-    #     self.idle_update()
-    #     if self.idle_flag:
-    #         self.idle_check()
-    #     self.idle_flag = False
-    #     channel = ctx.author.voice.channel
-    #
-    #     if not channel:  # 명령어를 친 유저가 음성채널에 없는 경우.
-    #         await Util.send_error_msg(ctx, "음성 채널에 들어가고 나서 말해")
-    #         return
-    #     elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
-    #         await channel.connect()
-    #         await self.music.add_music(self.bot, ctx, url)
-    #         ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
-    #     elif channel is self.bot.voice_clients[0].channel:  # 명령어를 친 유저가 음성채널에 있고, 그 음성태널에 이미 봇이 있는 경우
-    #         await self.music.add_music(self.bot, ctx, url)
-    #         if not self.bot.voice_clients[0].is_playing():
-    #             ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
-    #     else:
-    #         await Util.send_error_msg(ctx, "안들려~")
-    #         return
+    @commands.command(name="음악")
+    async def music(self, ctx: Context, url: str):
+        channel = ctx.author.voice.channel
+
+        if not channel:  # 명령어를 친 유저가 음성채널에 없는 경우.
+            await Util.send_error_msg(ctx, "음성 채널에 들어가고 나서 말해")
+            return
+        elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
+            await channel.connect()
+            await self.music.add_music(self.bot, ctx, url)
+            ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
+        elif channel is self.bot.voice_clients[0].channel:  # 명령어를 친 유저가 음성채널에 있고, 그 음성태널에 이미 봇이 있는 경우
+            await self.music.add_music(self.bot, ctx, url)
+            if not self.bot.voice_clients[0].is_playing():
+                ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
+        else:
+            await Util.send_error_msg(ctx, "안들려~")
+            return
 
     @commands.command(name="일시정지")
     async def pause(self, ctx: Context):
@@ -97,6 +73,7 @@ class Command(commands.Cog):
 
     @commands.command(name="정지")
     async def stop(self, ctx: Context):
+        self.music.clear_list()
         voice = self.bot.voice_clients[0]
         if voice.is_playing():
             voice.stop()
@@ -107,7 +84,9 @@ class Command(commands.Cog):
     async def skip(self, ctx: Context):
         voice = self.bot.voice_clients[0]
         if voice.is_playing():
-            pass
+            voice.stop()
+        else:
+            await Util.send_error_msg(ctx, "응~ 아냐~")
 
     @commands.command(name="들어와")
     async def join(self, ctx: Context):
@@ -118,6 +97,7 @@ class Command(commands.Cog):
             await Util.send_error_msg(ctx, "음성 채널에 들어가고 나서 말해")
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
             await channel.connect()
+            self.bot.voice_clients[0].stop()
         elif channel is self.bot.voice_clients[0].channel:  # 명령어를 친 유저가 음성채널에 있고, 그 음성채널에 이미 봇이 있는 경우
             await Util.send_error_msg(ctx, "응~ 이미 들어와 있어~")
         else:
@@ -180,3 +160,36 @@ class Command(commands.Cog):
             message = "바빠서 못해주는데?"
 
         await ctx.send(message, delete_after=5)
+
+    # @commands.command(name="척추의요정시작")
+    # async def start_spine_fairy(self, ctx: Context, *args):
+    #     if self.spine_fairy_flag:
+    #         await Util.send_error_msg(ctx, "이미 실행 중이니 껐다가 다시 켜")
+    #
+    #     fairy_time = 300
+    #     if args and len(args) == 0:
+    #         try:
+    #             fairy_time = int(args[0]) * 60
+    #         except Exception as e:
+    #             self.logger.error(e)
+    #
+    #     await ctx.send("척추의 요정 시작!")
+    #     self.spine_fairy_flag = True
+    #     self.work = threading.Thread(target=self.spine_fairy, args=(ctx, fairy_time))
+    #     self.work.start()
+    #
+    # @commands.command(name="척추의요정끝")
+    # async def end_spine_fairy(self, ctx: Context):
+    #     if self.work is not None:
+    #         self.spine_fairy_flag = False
+    #         await ctx.send("척추의 요정 끝!")
+    #     else:
+    #         await ctx.send("시작시키고나 말하시지")
+    #
+    # def spine_fairy_wrap(self, ctx: Context, fairy_time: int):
+    #     asyncio.run(self.spine_fairy(ctx, fairy_time))
+    #
+    # async def spine_fairy(self, ctx: Context, fairy_time: int):
+    #     while self.spine_fairy_flag:
+    #         await ctx.send(Util.get_fairy_message())
+    #         time.sleep(fairy_time)

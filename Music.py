@@ -13,6 +13,9 @@ import re
 
 
 class Music:
+    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+    YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': 'True'}
+
     def __init__(self, bot: commands.Bot):
         self.logger = Log(self.__class__.__name__)
         self.bot = bot
@@ -25,9 +28,12 @@ class Music:
             if is_url_right is None:
                 await Util.send_error_msg(ctx, "url이 잘못된 것 같은데?")
                 return False
-            file_data = await YTDLSource.from_url(url, loop=bot.loop)
-            self.play_list.append(file_data)
-            self.logger.info("노래 추가: " + str(file_data))
+            with YoutubeDL(Music.YDL_OPTIONS) as ydl:
+                info = ydl.extract_info(url, download=False)
+                I_URL = info['formats'][0]['url']
+                source = await discord.FFmpegOpusAudio.from_probe(I_URL, **Music.FFMPEG_OPTIONS)
+                self.play_list.append(source)
+                self.logger.info("노래 추가: " + str(source))
         except Exception as e:
             self.logger.error('add_music: ' + str(e))
             return False
@@ -36,11 +42,9 @@ class Music:
     def get_music_source(self):
         self.logger.info('get_music_source')
         self.logger.info("전 노래 개수: " + str(len(self.play_list)))
-        if len(self.play_list) > 0:
-            source = discord.PCMVolumeTransformer(
-                discord.FFmpegPCMAudio(executable="C:\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe",
-                                       source=self.play_list.pop(0)['file_name']))
-            self.logger.info('music source: ' + str(source))
+        if self.play_list:
+            source = self.play_list.pop(0)
+            self.logger.info('빠져나온 음악: ' + str(source))
             self.logger.info("후 노래 개수: " + str(len(self.play_list)))
             return source
 
@@ -63,39 +67,3 @@ class Music:
 
     def clear_list(self):
         self.play_list.clear()
-
-
-class YTDLSource(discord.PCMVolumeTransformer):
-    ytdl_format_options = {
-        'format': 'bestaudio/best',
-        'restrictfilenames': True,
-        'noplaylist': True,
-        'nocheckcertificate': True,
-        'ignoreerrors': False,
-        'logtostderr': False,
-        'quiet': True,
-        'no_warnings': True,
-        'default_search': 'auto',
-        'source_address': '0.0.0.0'  # bind to ipv4 since ipv6 addresses cause issues sometimes
-    }
-    ytdl = YoutubeDL(ytdl_format_options)
-
-    def __init__(self, source, *, data, volume=0.2):
-        super().__init__(source, volume)
-        self.data = data
-        self.title = data.get('title')
-        self.url = ""
-
-    @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
-        loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: cls.ytdl.extract_info(url, download=not stream))
-        file_data = {}
-        if 'entries' in data:
-            print(data)
-            data = data['entries'][0]
-            print(data)
-        file_data['id'] = data['id']
-        file_data['file_name'] = data['title'] if stream else cls.ytdl.prepare_filename(data)
-        file_data['file_title'] = data['title']
-        return file_data
