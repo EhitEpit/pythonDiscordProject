@@ -28,6 +28,7 @@ class Log:
         self.logger.addHandler(file_handler)
 
         self.logger.info("================Log Start================")
+        self.logger.info(platform.system())
 
     def info(self, msg=''):
         self.logger.info(msg)
