@@ -8,7 +8,7 @@ node {
   }
   
   stage('============== Push image ===============') {
-    docker.withRepository('chungil987/raspberry', '7785e67a-d7b2-4683-82bf-dc2da699140c') {
+    docker.withRepository('chungil987/raspberry', '	2375cfc7-0c3c-414d-99c3-e6d8f2417e34') {
       app.push()
     }
   }
