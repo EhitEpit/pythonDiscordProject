@@ -4,7 +4,7 @@ node {
   }
   
   stage('============== Build image & push ===============') {
-    def app = docker.build("chungil987/raspberry:muyaho", "--build-arg TOKEN=${TOKEN}")
+    def app = docker.build("chungil987/raspberry:muyaho", "--build-arg TOKEN=${TOKEN} .")
     docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
         app.push("muyaho")
     }
