@@ -12,6 +12,7 @@ node {
 
   stage('============== deploy image ==============') {
     sh 'sudo k3s kubectl delete pod muyaho-pod'
+    sh 'pwd'
     sh 'sudo k3s kubectl apply -f rasp.yaml'
   }
 }
