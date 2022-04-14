@@ -5,11 +5,6 @@ from discord.ext import commands
 import discord
 from discord.ext.commands import Context
 from youtube_dl import YoutubeDL
-import youtube_dl
-import Util
-from discord.utils import get
-from discord import FFmpegPCMAudio
-import re
 
 
 class Music:
@@ -21,13 +16,13 @@ class Music:
         self.bot = bot
         self.play_list = []
 
-    async def add_music(self, bot: commands.Bot, ctx: Context, url: str):
+    async def add_music(self, ctx: Context, url: str):
         self.logger.info('add_music')
         try:
-            is_url_right = re.match('(https?://)?(www\.)?((youtube\.(com))/watch\?v=([-\w]+)|youtu\.be/([-\w]+))', url)
-            if is_url_right is None:
-                await Util.send_error_msg(ctx, "url이 잘못된 것 같은데?")
-                return False
+            # is_url_right = re.match('(https?://)?(www\.)?((youtube\.(com))/watch\?v=([-\w]+)|youtu\.be/([-\w]+))', url)
+            # if is_url_right is None:
+            #     await Util.send_error_msg(ctx, "url이 잘못된 것 같은데?")
+            #     return False
             with YoutubeDL(Music.YDL_OPTIONS) as ydl:
                 info = ydl.extract_info(url, download=False)
                 I_URL = info['formats'][0]['url']

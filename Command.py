@@ -1,8 +1,4 @@
 import datetime
-import re
-import threading
-
-import asyncio
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context

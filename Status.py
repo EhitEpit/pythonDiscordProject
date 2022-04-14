@@ -1,7 +1,6 @@
 from Log import Log
 from discord.ext import commands
 import discord
-from discord.ext.commands import Context
 
 
 class Status(commands.Cog):
