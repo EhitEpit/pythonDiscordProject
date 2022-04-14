@@ -15,6 +15,6 @@ node {
       sh 'sudo k3s kubectl delete pod muyaho'
     } catch(Exception err) {
     }
-    sh 'sudo k3s kubectl run muyaho --image chungil987/raspberry:muyaho --overrides=\'{"apiVersion": "v1", "spec": { "template": { "spec": { "nodeSelector": { "kubernetes.io/hostname": "k3s-slave01" }}}}}\''
+    sh 'sudo k3s kubectl run muyaho --image chungil987/raspberry:muyaho --overrides=${OVERRIDE}'
   }
 }
