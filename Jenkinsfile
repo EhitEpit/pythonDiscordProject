@@ -10,15 +10,11 @@ node {
     }
   }
 
-  dir('/home/pi'){
-      stage('============== deploy image ==============') {
-        try{
-          sh 'sudo k3s kubectl delete pod muyaho-pod'
-        } catch(Exception err) {
-
-        }
-        sh 'sudo k3s kubectl apply -f rasp.yaml'
-      }
+  stage('============== deploy image ==============') {
+    try{
+      sh 'sudo k3s kubectl delete pod muyaho'
+    } catch(Exception err) {
+    }
+    sh 'sudo k3s kubectl run muyaho --image chungil987/raspberry:muyaho'
   }
-
 }
