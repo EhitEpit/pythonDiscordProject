@@ -8,7 +8,7 @@ node {
     docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
         app.push("muyaho")
     }
-    sh 'sleep 10'
+    sleep 10
   }
 
   stage('============== deploy image ==============') {
