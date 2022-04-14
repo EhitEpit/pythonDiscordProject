@@ -41,10 +41,10 @@ class Command(commands.Cog):
             return
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
             await channel.connect()
-            await self.music.add_music(self.bot, ctx, url)
+            await self.music.add_music(ctx, url)
             ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
         elif channel is self.bot.voice_clients[0].channel:  # 명령어를 친 유저가 음성채널에 있고, 그 음성태널에 이미 봇이 있는 경우
-            await self.music.add_music(self.bot, ctx, url)
+            await self.music.add_music(ctx, url)
             if not self.bot.voice_clients[0].is_playing():
                 ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
         else:
