@@ -57,4 +57,6 @@ class Program:
             time.sleep(5)
 
     def start(self):
-        self.bot.run(get_token())
+        token = get_token()
+        self.logger.info(token)
+        self.bot.run(token)
