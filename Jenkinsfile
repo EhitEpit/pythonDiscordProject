@@ -4,11 +4,8 @@ node {
   }
   
   stage('============== Build image & push ===============') {
-    def app = docker.build("chungil987/raspberry:muyaho", "--build-arg TOKEN=${TOKEN} .")
-    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
-        app.push("muyaho")
-    }
-    sleep 10
+    sh 'docker build --tag chungil987/muyaho:1.0.1 --build-arg TOKEN=${TOKEN} .'
+    sh 'docker push chungil987/muyaho:1.0.1'
   }
 
   stage('============== deploy image ==============') {
@@ -16,6 +13,6 @@ node {
       sh 'sudo k3s kubectl delete pod muyaho'
     } catch(Exception err) {
     }
-    sh 'sudo k3s kubectl run muyaho --image chungil987/raspberry:muyaho --overrides="${OVERRIDE}"'
+    sh 'sudo k3s kubectl run muyaho --image chungil987/muyaho:1.0.1 --overrides="${OVERRIDE}"'
   }
 }
