@@ -22,10 +22,11 @@ class Command(commands.Cog):
     # 핑 테스트
     @commands.command(name="핑")
     async def ping(self, ctx: Context):
+        import socket
         start_time = time.time()
         await ctx.send("퐁! ")
         end_time = time.time()
-        await ctx.send(f'Latency: {round(self.bot.latency * 1000)}ms\nAPI: {round((end_time - start_time) * 1000)}ms')
+        await ctx.send(f'Latency: {round(self.bot.latency * 1000)}ms\n{socket.gethostname()}: {round((end_time - start_time) * 1000)}ms')
 
     # 인사
     @commands.command(name="안녕")
@@ -83,6 +84,12 @@ class Command(commands.Cog):
             voice.stop()
         else:
             await Util.send_error_msg(ctx, "응~ 아냐~")
+
+    @commands.command(name="목록")
+    async def music_list(self, ctx: Context):
+        await self.music.send_play_list(ctx)
+
+
 
     @commands.command(name="들어와")
     async def join(self, ctx: Context):
