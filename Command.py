@@ -18,6 +18,7 @@ class Command(commands.Cog):
         self.spine_fairy_flag = False
         self.music = Music.Music(self.bot)
         self.last_time = datetime.datetime.now()
+        self.bot_status = self.bot.get_cog('Status')
 
     # 핑 테스트
     @commands.command(name="핑")
@@ -41,6 +42,8 @@ class Command(commands.Cog):
             await Util.send_error_msg(ctx, "음성 채널에 들어가고 나서 말해")
             return
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
+            self.bot_status.idle_check_on()
+            await self.bot_status.singing()
             await channel.connect()
             await self.music.add_music(ctx, url)
             ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
@@ -89,8 +92,6 @@ class Command(commands.Cog):
     async def music_list(self, ctx: Context):
         await self.music.send_play_list(ctx)
 
-
-
     @commands.command(name="들어와")
     async def join(self, ctx: Context):
         print("join")
@@ -99,6 +100,7 @@ class Command(commands.Cog):
         if not channel:  # 명령어를 친 유저가 음성채널에 없는 경우.
             await Util.send_error_msg(ctx, "음성 채널에 들어가고 나서 말해")
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
+            self.bot_status.idle_check_on()
             await channel.connect()
             self.bot.voice_clients[0].stop()
         elif channel is self.bot.voice_clients[0].channel:  # 명령어를 친 유저가 음성채널에 있고, 그 음성채널에 이미 봇이 있는 경우
@@ -114,6 +116,8 @@ class Command(commands.Cog):
         if not self.bot.voice_clients:
             await Util.send_error_msg(ctx, "원래 없었는데 뭔소리야")
         elif self.bot.voice_clients[0].channel is ctx.author.voice.channel:
+            self.bot_status.idle_check_off()
+            await self.bot_status.waiting()
             self.music.clear_list()
             await self.bot.voice_clients[0].disconnect()
         else:
@@ -135,9 +139,9 @@ class Command(commands.Cog):
         for item in self.last_msg:
             if item.attachments:
                 await ctx.send(
-                    f'{Util.get_user_name(item)}가 {Util.format_datetime(item.created_at)}에 {item.attachments[0].url} 를 삭제했어.\n')
+                    f'{Util.get_user_name(item)}이/가 {Util.format_datetime(item.created_at)}에 {item.attachments[0].url} 를 삭제했어.\n')
             else:
-                message += f'{Util.get_user_name(item)}가 {Util.format_datetime(item.created_at)}에 \"{item.content}\"를 삭제했어.\n'
+                message += f'{Util.get_user_name(item)}이/가 {Util.format_datetime(item.created_at)}에 \"{item.content}\"를 삭제했어.\n'
 
         self.last_msg.clear()
         await ctx.send(message)
