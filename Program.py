@@ -1,6 +1,4 @@
 import asyncio
-import os
-import platform
 import time
 
 from discord.ext import commands
@@ -8,16 +6,8 @@ from Command import Command
 from Status import Status
 from Log import Log
 import datetime
-import threading
 
 
-def get_token():
-    if platform.system() == 'Windows':
-        token_path = os.getcwd() + '\\token'
-    else:
-        token_path = os.getcwd() + '/token'
-    t = open(token_path, 'r', encoding='utf-8')
-    return t.read()
 
 
 class Program:
@@ -53,10 +43,7 @@ class Program:
                 self.logger.info("휴면 상태 갱신")
                 self.idle_status = True
                 self.last_time = datetime.datetime.now()
-
             time.sleep(5)
 
-    def start(self):
-        token = get_token()
-        self.logger.info(token)
+    def start(self, token=""):
         self.bot.run(token)
