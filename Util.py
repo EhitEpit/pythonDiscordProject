@@ -29,8 +29,8 @@ def get_error_message():
     return error_msg_list[random.randint(0, len(error_msg_list) - 1)]
 
 
-async def send_error_msg(ctx: Context, msg: str):
-    await ctx.send(msg, delete_after=5)
+async def send_error_msg(ctx: Context, msg: str, sec=5):
+    await ctx.send(msg, delete_after=sec)
 
 
 def get_fairy_message():

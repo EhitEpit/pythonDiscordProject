@@ -15,8 +15,6 @@ class Log:
         stream_handler.setFormatter(formatter)
         self.logger.addHandler(stream_handler)
 
-        file_handler = None
-
         if platform.system() == 'Windows':
             if not os.path.exists(os.getcwd() + '\\log'):
                 os.mkdir(os.getcwd() + '\\log')

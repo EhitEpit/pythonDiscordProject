@@ -1,6 +1,6 @@
 import datetime
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Context
 
 import Music
@@ -10,12 +10,12 @@ from Log import Log
 
 
 class Command(commands.Cog):
+    _R6S_MEMBER = 957613056391794708
 
     def __init__(self, bot: commands.Bot):
         self.logger = Log(self.__class__.__name__)
         self.bot = bot
         self.last_msg = []
-        self.spine_fairy_flag = False
         self.music = Music.Music(self.bot)
         self.last_time = datetime.datetime.now()
         self.bot_status = self.bot.get_cog('Status')
@@ -149,7 +149,7 @@ class Command(commands.Cog):
     # 다들 모여!!!(레식채널)
     @commands.command(name="다들모여")
     async def call_everyone(self, ctx: Context):
-        await ctx.send(f"레식하러 다들모여!!! {ctx.guild.get_role(957613056391794708).mention}")
+        await ctx.send(f"레식하러 다들모여!!! {ctx.guild.get_role(Command._R6S_MEMBER).mention}")
 
     # 커맨드 에러
     @commands.Cog.listener()
@@ -168,35 +168,33 @@ class Command(commands.Cog):
 
         await ctx.send(message, delete_after=5)
 
-    # @commands.command(name="척추의요정시작")
-    # async def start_spine_fairy(self, ctx: Context, *args):
-    #     if self.spine_fairy_flag:
-    #         await Util.send_error_msg(ctx, "이미 실행 중이니 껐다가 다시 켜")
-    #
-    #     fairy_time = 300
-    #     if args and len(args) == 0:
-    #         try:
-    #             fairy_time = int(args[0]) * 60
-    #         except Exception as e:
-    #             self.logger.error(e)
-    #
-    #     await ctx.send("척추의 요정 시작!")
-    #     self.spine_fairy_flag = True
-    #     self.work = threading.Thread(target=self.spine_fairy, args=(ctx, fairy_time))
-    #     self.work.start()
-    #
-    # @commands.command(name="척추의요정끝")
-    # async def end_spine_fairy(self, ctx: Context):
-    #     if self.work is not None:
-    #         self.spine_fairy_flag = False
-    #         await ctx.send("척추의 요정 끝!")
-    #     else:
-    #         await ctx.send("시작시키고나 말하시지")
-    #
-    # def spine_fairy_wrap(self, ctx: Context, fairy_time: int):
-    #     asyncio.run(self.spine_fairy(ctx, fairy_time))
-    #
-    # async def spine_fairy(self, ctx: Context, fairy_time: int):
-    #     while self.spine_fairy_flag:
-    #         await ctx.send(Util.get_fairy_message())
-    #         time.sleep(fairy_time)
+    @commands.command(name="척추요정")
+    async def spine_fairy_on(self, ctx: Context, *args):
+        if args:
+            if args[0] == "시작":
+                if self.spine_fairy.is_running():
+                    await Util.send_error_msg(ctx, "이미 실행 중이야")
+                    return
+
+                await ctx.send("척추의 요정 시작!")
+                self.spine_fairy.start(ctx)
+            elif args[0] == "끝":
+                if self.spine_fairy.is_running():
+                    await ctx.send("척추의 요정 끝!")
+                    self.spine_fairy.stop(ctx)
+                else:
+                    await ctx.send("시작시키고나 말하시지")
+            else:
+                raise commands.CommandNotFound
+        else:
+            raise commands.CommandNotFound
+
+    @tasks.loop(minutes=5.0)
+    async def spine_fairy(self, ctx: Context):
+        channel = ctx.author.voice.channel
+        if channel is None:
+            await Util.send_error_msg(ctx, "음성 채팅방부터 들어가")
+        str = ""
+        for member_id in channel.voice_states.keys():
+            str += f"<@{member_id}>"
+        await Util.send_error_msg(ctx, f"{str} {Util.get_fairy_message()}", 10)
