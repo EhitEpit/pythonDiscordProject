@@ -175,13 +175,16 @@ class Command(commands.Cog):
                 if self.spine_fairy.is_running():
                     await Util.send_error_msg(ctx, "이미 실행 중이야")
                     return
+                elif ctx.author.voice is None:
+                    await Util.send_error_msg(ctx, "음성 채팅방부터 들어가")
+                    return
 
                 await ctx.send("척추의 요정 시작!")
                 self.spine_fairy.start(ctx)
             elif args[0] == "끝":
                 if self.spine_fairy.is_running():
                     await ctx.send("척추의 요정 끝!")
-                    self.spine_fairy.stop(ctx)
+                    self.spine_fairy.stop()
                 else:
                     await ctx.send("시작시키고나 말하시지")
             else:
@@ -191,10 +194,7 @@ class Command(commands.Cog):
 
     @tasks.loop(minutes=5.0)
     async def spine_fairy(self, ctx: Context):
-        channel = ctx.author.voice.channel
-        if channel is None:
-            await Util.send_error_msg(ctx, "음성 채팅방부터 들어가")
         str = ""
-        for member_id in channel.voice_states.keys():
+        for member_id in ctx.author.voice.channel.voice_states.keys():
             str += f"<@{member_id}>"
         await Util.send_error_msg(ctx, f"{str} {Util.get_fairy_message()}", 10)
