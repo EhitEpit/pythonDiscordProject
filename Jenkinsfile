@@ -7,6 +7,7 @@ node {
     sh 'docker login -u chungil987 -p ${PASSWORD}'
     sh 'docker build -t chungil987/muyaho:${VERSION} .'
     sh 'docker push chungil987/muyaho:${VERSION}'
+    sh 'docker rmi chungil987/muyaho:${VERSION}'
   }
 
   stage('============== deploy image ==============') {
