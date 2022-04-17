@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: muyaho-deployment
+  labels:
+    app: muyaho
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: muyaho
+  template:
+    metadata:
+      labels:
+        app: muyaho
+    spec:
+      containers:
+      - name: muyaho
+        image: chungil987/muyaho:${VERSION}
+        args: ["${TOKEN}"]
