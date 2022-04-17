@@ -5,7 +5,7 @@ node {
   
   stage('============== Build image & push ===============') {
     sh 'docker login -u chungil987 -p ${PASSWORD}'
-    sh 'docker build - chungil987/muyaho:${VERSION} TOKEN=${TOKEN} .'
+    sh 'docker build -t chungil987/muyaho:${VERSION} TOKEN=${TOKEN} .'
     sh 'docker push chungil987/muyaho:${VERSION}'
   }
 
