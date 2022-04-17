@@ -20,6 +20,10 @@ class Command(commands.Cog):
         self.last_time = datetime.datetime.now()
         self.bot_status = self.bot.get_cog('Status')
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot.get_channel(500644812358156310).send("무~ 야~ 호~!", delete_after=5.0)
+
     # 핑 테스트
     @commands.command(name="핑")
     async def ping(self, ctx: Context):
@@ -167,10 +171,6 @@ class Command(commands.Cog):
             message = "바빠서 못해주는데?"
 
         await ctx.send(message, delete_after=5)
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        await self.bot.get_channel(500644812358156310).send("무~ 야~ 호~!", delete_after=5.0)
 
     @commands.command(name="척추요정")
     async def spine_fairy_on(self, ctx: Context, *args):

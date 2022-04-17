@@ -37,6 +37,7 @@ class Status(commands.Cog):
     def idle_check_on(self):
         if not self.idle_check.is_running():
             self.logger.info("휴면 상태 체크 시작")
+            self.last_time = datetime.datetime.now()
             self.idle_check.start()
 
     # 휴면 상태 체크 끝
