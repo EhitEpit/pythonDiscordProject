@@ -25,14 +25,14 @@ class Command(commands.Cog):
     async def ping(self, ctx: Context):
         import socket
         start_time = time.time()
-        await ctx.send("퐁! ")
+        await ctx.send("퐁!")
         end_time = time.time()
         await ctx.send(f'Latency: {round(self.bot.latency * 1000)}ms\n{socket.gethostname()}: {round((end_time - start_time) * 1000)}ms')
 
     # 인사
     @commands.command(name="안녕")
     async def hello(self, ctx: Context):
-        await ctx.send(f'안녕! {Util.get_user_name(ctx)}!')
+        await ctx.send(f'하위~ {Util.get_user_name(ctx)}!')
 
     @commands.command(name="음악")
     async def music(self, ctx: Context, url: str):
