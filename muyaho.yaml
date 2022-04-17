@@ -16,5 +16,5 @@ spec:
     spec:
       containers:
       - name: muyaho
-        image: chungil987/muyaho:${VERSION}
+        image: chungil987/muyaho
         args: ["${TOKEN}"]
