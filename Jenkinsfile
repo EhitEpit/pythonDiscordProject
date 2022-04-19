@@ -44,10 +44,11 @@ node {
     }
 
     stage('============== deploy image ==============') {
+      def mode = '${DEPLOY_MODE}'
       try{
-        if ('${DEPLOY_MODE}' == 'IMAGE') {
+        if (mode == 'IMAGE') {
           sh 'sudo k3s kubectl set image deployment/muyaho-deploy muyaho=chungil987/muyaho:${VERSION}'
-        } else if ('${DEPLOY_MODE}' == 'ALL') {
+        } else if (mode == 'ALL') {
           throw new Exception("DEPLOY_MODE=ALL")
         }
       } catch(Exception err) {
