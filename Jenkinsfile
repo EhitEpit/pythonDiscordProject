@@ -45,19 +45,16 @@ node {
 
     stage('============== deploy image ==============') {
       def mode = '${DEPLOY_MODE}'
-      try{
-        if (mode == 'IMAGE') {
-          sh 'sudo k3s kubectl set image deployment/muyaho-deploy muyaho=chungil987/muyaho:${VERSION}'
-        } else if (mode == 'ALL') {
-          throw new Exception("DEPLOY_MODE=ALL")
-        }
-      } catch(Exception err) {
+      if (mode == 'IMAGE') {
+        sh 'sudo k3s kubectl set image deployment/muyaho-deploy muyaho=chungil987/muyaho:${VERSION}'
+      } else if (mode == 'ALL') {
         def data = 'apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: muyaho-deploy\n  labels:\n    app: muyaho-deploy\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: muyaho-deploy\n  template:\n    metadata:\n      labels:\n        app: muyaho-deploy\n    spec:\n      containers:\n      - name: muyaho\n        image: chungil987/muyaho:1.0.' + "${BUILD_NUMBER}" + '\n        args: ["' + "${params.TOKEN}" + '"]'
         writeFile file: 'muyaho.yaml', text: data
         sh 'sudo k3s kubectl apply -f muyaho.yaml'
       }
     }
-    stage('============== ===') {
+
+    stage('============== deploy success ==============') {
       notifyBuild('SUCCESS')
     }
   } catch(Exception err) {
