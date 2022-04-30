@@ -10,13 +10,15 @@ from youtube_dl import YoutubeDL
 
 class Music:
     FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-    YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': 'True'}
+    YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': 'False'}
+    MAX_PLAYLIST = 30
 
     def __init__(self, bot: commands.Bot):
         self.logger = Log(self.__class__.__name__)
         self.bot = bot
         self.play_source_list = []
         self.play_title_list = []
+        self.temp = {}
         self.playing_music = ""
 
     async def add_music(self, ctx: Context, url: str):
@@ -24,21 +26,40 @@ class Music:
         try:
             is_url_right = re.match(
                 '(https?://)?(www\.)?(((music\.)?youtube\.(com))/watch\?v=([-\w]+)|youtu\.be/([-\w]+))', url)
-            if is_url_right is None:
+            is_list_url_right = re.match(
+                '(https?://)?(www\.)?(((music\.)?youtube\.(com))/playlist\?list=([-\w]+))', url)
+            if (is_url_right or is_list_url_right) is None:
                 await Util.send_error_msg(ctx, "url이 잘못된 것 같은데?")
                 return False
             with YoutubeDL(Music.YDL_OPTIONS) as ydl:
                 info = ydl.extract_info(url, download=False)
-                I_URL = info['formats'][0]['url']
-                source = await discord.FFmpegOpusAudio.from_probe(I_URL, **Music.FFMPEG_OPTIONS)
-                self.play_source_list.append(source)
-                self.play_title_list.append((str(info['title']), url))
+                i_urls = []
+                sources = []
+                if "entries" in info:
+                    i_urls = info.get("entries")
+                else:
+                    i_urls.append(info)
 
-                embed = discord.Embed(title="추가된 음악",
-                                      description=str(info['title']),
-                                      color=0xFFCCE6)
-                embed.set_thumbnail(url=str(info['thumbnail']))
-                await ctx.send(embed=embed)
+                for index, i_url in enumerate(i_urls):
+                    source = await discord.FFmpegOpusAudio.from_probe(i_url['formats'][0]['url'],
+                                                                      **Music.FFMPEG_OPTIONS)
+                    sources.append(source)
+                    self.logger.info(type(source))
+                    self.logger.info(source)
+                    self.play_source_list.append(source)
+                    self.play_title_list.append((str(i_url['title']), url))
+
+                    if index == 0:
+                        if len(i_urls):
+                            pass
+                        else:
+                            pass
+                        embed = discord.Embed(title="추가된 음악",
+                                              description=str(i_url['title']),
+                                              color=0xFFCCE6)
+                        embed.set_thumbnail(url=str(i_url['thumbnail']))
+                        await ctx.send(embed=embed)
+
         except Exception as e:
             self.logger.error('add_music: ' + str(e))
             return False
