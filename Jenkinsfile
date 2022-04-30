@@ -44,7 +44,7 @@ node {
     }
 
     stage('============== deploy image ==============') {
-      def mode = '${env.DEPLOY_MODE}'
+      def mode = '${DEPLOY_MODE}'
       try{
         if (mode == 'IMAGE') {
           sh 'sudo k3s kubectl set image deployment/muyaho-deploy muyaho=chungil987/muyaho:${VERSION}'
