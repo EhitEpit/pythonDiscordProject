@@ -22,28 +22,28 @@ class Command(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        await self.bot.get_channel(500644812358156310).send("무~ 야~ 호~!", delete_after=5.0)
+        await self.bot.get_channel(500644812358156310).send(Util.Message.HELLO, delete_after=5.0)
 
     # 핑 테스트
     @commands.command(name="핑")
     async def ping(self, ctx: Context):
         import socket
         start_time = time.time()
-        await ctx.send("퐁!")
+        await ctx.send(Util.Message.ANSWER_PING)
         end_time = time.time()
         await ctx.send(f'Latency: {round(self.bot.latency * 1000)}ms\n{socket.gethostname()}: {round((end_time - start_time) * 1000)}ms')
 
     # 인사
     @commands.command(name="안녕")
     async def hello(self, ctx: Context):
-        await ctx.send(f'하위~ {Util.get_user_name(ctx)}!')
+        await ctx.send(Util.Message.ANSWER_HELLO + ' ' + Util.get_user_name(ctx) + '!')
 
     @commands.command(name="음악")
     async def music(self, ctx: Context, url: str):
         channel = ctx.author.voice.channel
 
         if not channel:  # 명령어를 친 유저가 음성채널에 없는 경우.
-            await Util.send_error_msg(ctx, "음성 채널에 들어가고 나서 말해")
+            await Util.send_error_msg(ctx, Util.Message.DONT_JOIN_VOICE_CHANNEL)
             return
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
             self.bot_status.idle_check_on()
@@ -56,7 +56,7 @@ class Command(commands.Cog):
             if not self.bot.voice_clients[0].is_playing():
                 ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
         else:
-            await Util.send_error_msg(ctx, "안들려~")
+            await Util.send_error_msg(ctx, Util.Message.ALREADY_JOIN_VOICE_CHANNEL)
             return
 
     @commands.command(name="일시정지")
@@ -65,7 +65,7 @@ class Command(commands.Cog):
         if voice.is_playing():
             voice.pause()
         else:
-            await Util.send_error_msg(ctx, "응~ 아냐~")
+            await Util.send_error_msg(ctx, Util.Message.WRONG_SITUATION_COMMAND)
 
     @commands.command(name="재개")
     async def resume(self, ctx: Context):
@@ -73,7 +73,7 @@ class Command(commands.Cog):
         if voice.is_paused():
             voice.resume()
         else:
-            await Util.send_error_msg(ctx, "응~ 아냐~")
+            await Util.send_error_msg(ctx, Util.Message.WRONG_SITUATION_COMMAND)
 
     @commands.command(name="정지")
     async def stop(self, ctx: Context):
@@ -82,7 +82,7 @@ class Command(commands.Cog):
         if voice.is_playing():
             voice.stop()
         else:
-            await Util.send_error_msg(ctx, "응~ 아냐~")
+            await Util.send_error_msg(ctx, Util.Message.WRONG_SITUATION_COMMAND)
 
     @commands.command(name="스킵")
     async def skip(self, ctx: Context):
@@ -90,7 +90,7 @@ class Command(commands.Cog):
         if voice.is_playing():
             voice.stop()
         else:
-            await Util.send_error_msg(ctx, "응~ 아냐~")
+            await Util.send_error_msg(ctx, Util.Message.WRONG_SITUATION_COMMAND)
 
     @commands.command(name="목록")
     async def music_list(self, ctx: Context):
@@ -98,34 +98,30 @@ class Command(commands.Cog):
 
     @commands.command(name="들어와")
     async def join(self, ctx: Context):
-        print("join")
         channel = ctx.author.voice.channel
 
         if not channel:  # 명령어를 친 유저가 음성채널에 없는 경우.
-            await Util.send_error_msg(ctx, "음성 채널에 들어가고 나서 말해")
+            await Util.send_error_msg(ctx, Util.Message.DONT_JOIN_VOICE_CHANNEL)
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
             self.bot_status.idle_check_on()
             await channel.connect()
             self.bot.voice_clients[0].stop()
         elif channel is self.bot.voice_clients[0].channel:  # 명령어를 친 유저가 음성채널에 있고, 그 음성채널에 이미 봇이 있는 경우
-            await Util.send_error_msg(ctx, "응~ 이미 들어와 있어~")
+            await Util.send_error_msg(ctx, Util.Message.ALREADY_JOIN_VOICE_CHANNEL)
         else:
-            await Util.send_error_msg(ctx, "안들려~")
-
-        print(channel)
-        print(self.bot.voice_clients[0])
+            await Util.send_error_msg(ctx, Util.Message.ALREADY_JOIN_OTHER_VOICE_CHANNEL)
 
     @commands.command(name="나가")
     async def leave(self, ctx: Context):
         if not self.bot.voice_clients:
-            await Util.send_error_msg(ctx, "원래 없었는데 뭔소리야")
+            await Util.send_error_msg(ctx, Util.Message.ALREADY_NOT_JOIN_VOICE_CHANNEL)
         elif self.bot.voice_clients[0].channel is ctx.author.voice.channel:
             self.bot_status.idle_check_off()
             await self.bot_status.waiting()
             self.music.clear_list()
             await self.bot.voice_clients[0].disconnect()
         else:
-            await Util.send_error_msg(ctx, "안들려~")
+            await Util.send_error_msg(ctx, Util.Message.WRONG_SITUATION_COMMAND)
 
     # 메시지 삭제 리스너
     @commands.Cog.listener()
@@ -136,7 +132,7 @@ class Command(commands.Cog):
     @commands.command(name="삭제기록")
     async def delete_log(self, ctx: Context):
         if not self.last_msg:
-            await ctx.send("기록된 삭제 메시지가 없어!")
+            await Util.send_error_msg(ctx, Util.Message.NOT_EXIST_DELETE_MESSAGE)
             return
 
         message = ""
@@ -151,9 +147,9 @@ class Command(commands.Cog):
         await ctx.send(message)
 
     # 다들 모여!!!(레식채널)
-    @commands.command(name="다들모여")
+    @commands.command(name="어셈블")
     async def call_everyone(self, ctx: Context):
-        await ctx.send(f"레식하러 다들모여!!! {ctx.guild.get_role(Command._R6S_MEMBER).mention}")
+        await ctx.send(Util.Message.ASSEMBLE + ' ' + ctx.guild.get_role(Command._R6S_MEMBER).mention)
 
     # 커맨드 에러
     @commands.Cog.listener()
@@ -163,40 +159,40 @@ class Command(commands.Cog):
         elif isinstance(error, commands.CommandOnCooldown):
             message = f"쿨타임 중... {round(error.retry_after, 1)}초 정도 있다가 다시 해"
         elif isinstance(error, commands.MissingPermissions):
-            message = "자격 미달!"
+            message = Util.Message.NOT_PERMISSION
         elif isinstance(error, commands.UserInputError):
             message = Util.get_error_message()
         else:
             self.logger.error(error)
-            message = "바빠서 못해주는데?"
+            message = Util.Message.BUSY
 
-        await ctx.send(message, delete_after=5)
+        await Util.send_error_msg(ctx, message)
 
     @commands.command(name="척추요정")
     async def spine_fairy_on(self, ctx: Context, *args):
         if args:
             if args[0] == "시작":
                 if self.spine_fairy.is_running():
-                    await Util.send_error_msg(ctx, "이미 실행 중이야")
+                    await Util.send_error_msg(ctx, Util.Message.ALREADY_EXCUTE)
                     return
                 elif ctx.author.voice is None:
-                    await Util.send_error_msg(ctx, "음성 채팅방부터 들어가")
+                    await Util.send_error_msg(ctx, Util.Message.DONT_JOIN_VOICE_CHANNEL)
                     return
 
-                await ctx.send("척추의 요정 시작!")
+                await ctx.send(Util.Message.START_FAIRY)
                 self.spine_fairy.start(ctx)
             elif args[0] == "끝":
                 if self.spine_fairy.is_running():
-                    await ctx.send("척추의 요정 끝!")
+                    await ctx.send(Util.Message.END_FAIRY)
                     self.spine_fairy.stop()
                 else:
-                    await ctx.send("시작시키고나 말하시지")
+                    await Util.send_error_msg(ctx, Util.Message.DONT_END)
             else:
                 raise commands.CommandNotFound
         else:
             raise commands.CommandNotFound
 
-    @tasks.loop(minutes=5.0)
+    @tasks.loop(minutes=10.0)
     async def spine_fairy(self, ctx: Context):
         str = ""
         for member_id in ctx.author.voice.channel.voice_states.keys():

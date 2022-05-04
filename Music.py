@@ -29,7 +29,7 @@ class Music:
             is_list_url_right = re.match(
                 '(https?://)?(www\.)?(((music\.)?youtube\.(com))/playlist\?list=([-\w]+))', url)
             if (is_url_right or is_list_url_right) is None:
-                await Util.send_error_msg(ctx, "url이 잘못된 것 같은데?")
+                await Util.send_error_msg(ctx, Util.Message.WRONG_MUSIC_URL)
                 return False
             with YoutubeDL(Music.YDL_OPTIONS) as ydl:
                 info = ydl.extract_info(url, download=False)
