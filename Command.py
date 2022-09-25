@@ -18,7 +18,6 @@ class Command(commands.Cog):
         self.last_msg = []
         self.music = Music.Music(self.bot)
         self.last_time = datetime.datetime.now()
-        self.bot_status = self.bot.get_cog('Status')
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -46,8 +45,9 @@ class Command(commands.Cog):
             await Util.send_error_msg(ctx, Util.Message.DONT_JOIN_VOICE_CHANNEL)
             return
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
-            self.bot_status.idle_check_on()
-            await self.bot_status.singing()
+            status = self.bot.get_cog('Status')
+            status.idle_check_on()
+            await status.singing()
             await channel.connect()
             await self.music.add_music(ctx, url)
             ctx.voice_client.play(self.music.get_music_source(), after=self.music.get_next_music)
@@ -103,7 +103,7 @@ class Command(commands.Cog):
         if not channel:  # 명령어를 친 유저가 음성채널에 없는 경우.
             await Util.send_error_msg(ctx, Util.Message.DONT_JOIN_VOICE_CHANNEL)
         elif channel and not self.bot.voice_clients:  # 명령어를 친 유저가 음성채널에 있고, 다른 음성 채널에 봇이 없는 경우
-            self.bot_status.idle_check_on()
+            self.bot.get_cog('Status').idle_check_on()
             await channel.connect()
             self.bot.voice_clients[0].stop()
         elif channel is self.bot.voice_clients[0].channel:  # 명령어를 친 유저가 음성채널에 있고, 그 음성채널에 이미 봇이 있는 경우
@@ -116,8 +116,9 @@ class Command(commands.Cog):
         if not self.bot.voice_clients:
             await Util.send_error_msg(ctx, Util.Message.ALREADY_NOT_JOIN_VOICE_CHANNEL)
         elif self.bot.voice_clients[0].channel is ctx.author.voice.channel:
-            self.bot_status.idle_check_off()
-            await self.bot_status.waiting()
+            status = self.bot.get_cog('Status')
+            status.idle_check_off()
+            await status.waiting()
             self.music.clear_list()
             await self.bot.voice_clients[0].disconnect()
         else:
