@@ -42,7 +42,7 @@ class MusicSource:
 
 
 class Music:
-    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-map_metadata -1 -f opus -c:a libopus -b:a 128k -vn -af loudnorm=I=-15:TP=-2:LRA=11:print_format=json'}
     YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': 'False'}
     MAX_PLAYLIST = 30
 
@@ -94,7 +94,8 @@ class Music:
         return True
 
     async def download_music_source(self, url):
-        return await discord.FFmpegOpusAudio.from_probe(url, **Music.FFMPEG_OPTIONS)
+        source = await discord.FFmpegOpusAudio.from_probe(url, **Music.FFMPEG_OPTIONS)
+        return source
 
     async def wait_add_music_loop(self, music_source):
         source = await self.download_music_source(music_source.get_url())
