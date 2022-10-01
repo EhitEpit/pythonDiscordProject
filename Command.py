@@ -124,6 +124,12 @@ class Command(commands.Cog):
         else:
             await Util.send_error_msg(ctx, Util.Message.WRONG_SITUATION_COMMAND)
 
+    @commands.command(name="반복")
+    async def loop(self, ctx: Context):
+        loop_type = self.music.loop()
+        embed = discord.Embed(title=Util.Message.LOOP_MODE, description=Util.get_loop_message(loop_type))
+        await ctx.send(embed=embed)
+
     # 메시지 삭제 리스너
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):

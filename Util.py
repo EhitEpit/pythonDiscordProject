@@ -41,6 +41,14 @@ def get_fairy_message():
     return fairy_msg_list[random.randint(0, len(fairy_msg_list) - 1)]
 
 
+def get_loop_message(loop_type):
+    if loop_type == 'none':
+        return '없음'
+    elif loop_type == 'once':
+        return '한곡반복'
+    elif loop_type == 'all':
+        return '전체반복'
+
 class StrEnum(str, Enum):
     def _generate_next_value_(value, start, count, last_values):
         return value
@@ -74,5 +82,7 @@ class Message(StrEnum):
     START_FAIRY = '척추의 요정 시작!'
     END_FAIRY = '척추의 요정 끝!'
 
+    LOOP_MODE = '반복 모드'
 
+    NOW_PLAYING_MUSIC = '현재 재생 중인 음악'
 

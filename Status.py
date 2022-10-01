@@ -51,7 +51,7 @@ class Status(commands.Cog):
     async def idle_check(self):
         if self.bot.voice_clients:
             if self.bot.voice_clients[0].is_playing():
-                self.logger.info("휴면 상태 갱신")
+                # self.logger.info("휴면 상태 갱신")
                 self.last_time = datetime.datetime.now()
             elif self.last_time + datetime.timedelta(minutes=Status.IDLE_TIME) <= datetime.datetime.now():
                 self.logger.info("나가기")
