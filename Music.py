@@ -164,6 +164,7 @@ class Music:
             self.play_music_list.pop(0)
             self.loop_type = 'all'
         elif self.loop_type == 'all':
+            self.play_music_list.pop()
             self.loop_type = 'none'
 
         self.bot.loop.create_task(self.wait_add_music_loop(self.playing_music))
