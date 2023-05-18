@@ -133,6 +133,9 @@ class Command(commands.Cog):
     # 메시지 삭제 리스너
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
+        for role in message.author.roles:
+            if role.name == '봇':
+                return
         self.last_msg.append(message)
 
     # 메시지 삭제 기록 보기
